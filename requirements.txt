@@ -9,7 +9,6 @@ certifi==2019.11.28
 cffi==1.14.0
 chardet==3.0.4
 cryptography==2.8
-gunicorn==20.0.4
 idna==2.9
 idna-ssl==1.1.0
 isodate==0.6.0
@@ -26,3 +25,4 @@ six==1.14.0
 typing-extensions==3.7.4.1
 urllib3==1.25.8
 yarl==1.4.2
+gunicorn
