@@ -198,7 +198,7 @@ class AdaptiveCardsBot(ActivityHandler):
             ],
         ))
         reply = MessageFactory.list([])
-        reply.text("My pleasure. Here some information:")
+        reply.text="My pleasure. Here some information: "
         reply.attachment_layout = 'carousel'
         reply.attachments.append(global_card)
         reply.attachments.append(vietnam_card)

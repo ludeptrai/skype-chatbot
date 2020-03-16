@@ -1,1 +1,1 @@
-web gunicorn app:APP --bind localhost:12345 --worker-class aiohttp.worker.GunicornWebWorker
+web gunicorn app:APP --bind localhost:5000 --worker-class aiohttp.worker.GunicornWebWorker
