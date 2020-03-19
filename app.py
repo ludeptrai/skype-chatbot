@@ -22,8 +22,6 @@ from bots.adaptive_cards_bot import generate_reply
 from config import DefaultConfig
 
 import time
-from timeloop import Timeloop
-from datetime import timedelta
 
 CONFIG = DefaultConfig()
 
