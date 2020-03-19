@@ -4,7 +4,9 @@
 import sys
 import traceback
 from datetime import datetime
-
+from typing import Dict
+import uuid
+import asyncio
 from aiohttp import web
 from aiohttp.web import Request, Response, json_response
 from botbuilder.core import (
@@ -13,10 +15,15 @@ from botbuilder.core import (
     BotFrameworkAdapter,
 )
 from botbuilder.core.integration import aiohttp_error_middleware
-from botbuilder.schema import Activity, ActivityTypes
+from botbuilder.schema import Activity, ActivityTypes, ConversationReference
 
 from bots import AdaptiveCardsBot
+from bots.adaptive_cards_bot import generate_reply
 from config import DefaultConfig
+
+import time
+from timeloop import Timeloop
+from datetime import timedelta
 
 CONFIG = DefaultConfig()
 
@@ -56,11 +63,21 @@ async def on_error(context: TurnContext, error: Exception):
 
 ADAPTER.on_turn_error = on_error
 
+# Create a shared dictionary.  The Bot will add conversation references when users
+# join the conversation and send messages.
+CONVERSATION_REFERENCES: Dict[str, ConversationReference] = dict()
+
+# If the channel is the Emulator, and authentication is not in use, the AppId will be null.
+# We generate a random AppId for this case only. This is not required for production, since
+# the AppId will have a value.
+APP_ID = SETTINGS.app_id if SETTINGS.app_id else uuid.uuid4()
+
 # Create the Bot
-BOT = AdaptiveCardsBot()
+BOT = AdaptiveCardsBot(CONVERSATION_REFERENCES)
 
 
 # Listen for incoming requests on /api/messages
+
 async def messages(req: Request) -> Response:
     # Main bot message handler.
     if "application/json" in req.headers["Content-Type"]:
@@ -77,8 +94,39 @@ async def messages(req: Request) -> Response:
     return Response(status=201)
 
 
+
+
+
+# Send a message to all conversation members.
+# This uses the shared Dictionary that the Bot adds conversation references to.
+async def _send_proactive_message():
+    for conversation_reference in CONVERSATION_REFERENCES.values():
+        return await ADAPTER.continue_conversation(
+            conversation_reference,
+            lambda turn_context: turn_context.send_activity(generate_reply('report')),
+            APP_ID,
+        )
+
+async def notify(req: Request) -> Response:  # pylint: disable=unused-argument
+    await _send_proactive_message()
+    return Response(status=201, text="Proactive messages have been sent")
+
+async def listen_to_redis(app):
+    while True:
+        clock=datetime.now()
+        if (clock.hour==8 and clock.minute==30 and clock.second<6) or (clock.hour==17 and clock.minute==30 and clock.second<6):
+            print("Daily report!")
+            await _send_proactive_message()
+            await asyncio.sleep(5)
+        await asyncio.sleep(1)
+
+async def start_background_tasks(app):
+    app['redis_listener'] = asyncio.create_task(listen_to_redis(app))
+
 APP = web.Application(middlewares=[aiohttp_error_middleware])
 APP.router.add_post("/api/messages", messages)
+APP.router.add_get("/api/notify", notify)
+APP.on_startup.append(start_background_tasks)
 
 if __name__ == "__main__":
     try:

@@ -3,19 +3,15 @@
 
 import json
 import os
+from typing import Dict
 import random
 from typing import List, Union
 from botbuilder.core import ActivityHandler, TurnContext, CardFactory
 from botbuilder.schema import ChannelAccount, Attachment, Activity, ActivityTypes
 from botbuilder.schema import (
+    ConversationReference,
     ActionTypes,
     Attachment,
-    AnimationCard,
-    AudioCard,
-    HeroCard,
-    VideoCard,
-    ReceiptCard,
-    SigninCard,
     ThumbnailCard,
     MediaUrl,
     CardAction,
@@ -56,14 +52,51 @@ def get_api():
     vietnam_statistic['being_infected']=vietnam_statistic['cases']-vietnam_statistic['deaths']-vietnam_statistic['recovered']
     return {'global':global_statistic,'vietnam':vietnam_statistic}
 
+def generate_reply(response_type):
+    if response_type=='reply':
+        text='My pleasure. Here some information: '
+    elif response_type=='report':
+        text='For your information: '
 
-CARDS = [
-    "resources/FlightItineraryCard.json",
-    "resources/ImageGalleryCard.json",
-    "resources/LargeWeatherCard.json",
-    "resources/RestaurantCard.json",
-    "resources/SolitaireCard.json"
-]
+    data=get_api()
+    global_card= CardFactory.thumbnail_card(ThumbnailCard(
+        title="Global",
+        text="""Total cases:\t{}\r\nBeing infected:\t{}\r\nDeaths:\t{}\r\nRecovered:\t{}\r\n""".format(str(data['global']['cases']),str(data['global']['being_infected']),str(data['global']['deaths']),str(data['global']['recovered'])),
+        images=[
+            CardImage(
+                url="https://inkedin.com/wp-content/uploads/2020/03/earth-icon.png"
+            )
+        ],
+        buttons=[
+            CardAction(
+                type=ActionTypes.open_url,
+                title="More information",
+                value="https://www.worldometers.info/coronavirus/",
+            )
+        ],
+    ))
+    vietnam_card= CardFactory.thumbnail_card(ThumbnailCard(
+        title="Viet Nam",
+        text="""Total cases:\t{}\r\nBeing infected:\t{}\r\nDeaths:\t{}\r\nRecovered: \t{}\r\n""".format(str(data['vietnam']['cases']),str(data['vietnam']['being_infected']),str(data['vietnam']['deaths']),str(data['vietnam']['recovered'])),
+        images=[
+            CardImage(
+                url="https://cdn2.iconfinder.com/data/icons/world-flag-2/30/21-512.png"
+            )
+        ],
+        buttons=[
+            CardAction(
+                type=ActionTypes.open_url,
+                title="More information",
+                value="https://corona.kompa.ai/",
+            )
+        ],
+    ))
+    anh=MessageFactory()
+    reply = anh.list([],text=text)
+    reply.attachment_layout = 'carousel'
+    reply.attachments.append(global_card)
+    reply.attachments.append(vietnam_card)
+    return reply
 
 class AdaptiveCardsBot(ActivityHandler):
     """
@@ -75,6 +108,8 @@ class AdaptiveCardsBot(ActivityHandler):
     received, a new instance of this class is created. Objects that are expensive to construct, or have a lifetime
     beyond the single turn, should be carefully managed.
     """
+    def __init__(self, conversation_references: Dict[str, ConversationReference]):
+        self.conversation_references = conversation_references
 
     async def on_members_added_activity(
         self, members_added: [ChannelAccount], turn_context: TurnContext
@@ -82,139 +117,31 @@ class AdaptiveCardsBot(ActivityHandler):
         for member in members_added:
             if member.id != turn_context.activity.recipient.id:
                 await turn_context.send_activity(
-                    f"Hello everybody. I'm Corona"
-                    f"Ready to bring to you newest information about corona all over the world and Viet Nam"
+                    f"Hello everybody. I'm Corona. "
+                    f"Ready to bring to you newest information about corona all over the world and Viet Nam. "
                     f"Type \"corona\" anytime to get the information."
                 )
 
     async def on_message_activity(self, turn_context: TurnContext):
-        # if turn_context.activity.text=="corona":
-        data=get_api()
-        #     message = Activity(
-        #         text="My pleasure. Here some information:",
-        #         type=ActivityTypes.message,
-        #         attachments=[CardFactory.receipt_card(ReceiptCard(
-        #     items=[ReceiptItem(
-        #             title="CORONA STATISTIC (LIVE)",
-        #             # price="$45.00",
-        #             # quantity="720",
-        #             image=CardImage(
-        #                 url="https://www.sifo-ltd.com/hs-fs/hubfs/Images/Icons/011-world.png?width=512&name=011-world.png"
-        #             )
-        #         ),
-        #         ReceiptItem(
-        #             title="Global",
-        #             # price="$45.00",
-        #             # quantity="720",
-        #             # image=CardImage(
-        #             #     url="https://cdn2.iconfinder.com/data/icons/world-flag-2/30/21-512.png"
-        #             # )
-        #         ),
-        #         ReceiptItem(
-        #             title="Total cases: ",
-        #             price=str(data['global']['cases']),
-        #             ),
-        #         ReceiptItem(
-        #             title="Deaths: ",
-        #             price=str(data['global']['deaths']),
-        #             ),
-        #         ReceiptItem(
-        #             title="Being infected:",
-        #             price=str(data['global']['being_infected']),
-        #             ),
-        #         ReceiptItem(
-        #             title="Recovered: ",
-        #             price=str(data['global']['recovered']),
-        #             ),
-        #         ReceiptItem(
-        #         text="hi",
-        #         title='______________'
-        #         ),
-        #         ReceiptItem(
-        #             title="Viet Nam",
-        #             # price="$45.00",
-        #             # quantity="720",
-        #             # image=CardImage(
-        #             #     url="https://cdn2.iconfinder.com/data/icons/world-flag-2/30/21-512.png"
-        #             # )
-        #         ),
-        #         ReceiptItem(
-        #             subtitle="Total cases: ",
-        #             price=str(data['vietnam']['cases']),
-        #             ),
-        #         ReceiptItem(
-        #             subtitle="Deaths: ",
-        #             price=str(data['vietnam']['deaths']),
-        #             ),
-        #         ReceiptItem(
-        #             subtitle="Being infected:",
-        #             price=str(data['vietnam']['being_infected']),
-        #             ),
-        #         ReceiptItem(
-        #             subtitle="Recovered: ",
-        #             price=str(data['vietnam']['recovered']),
-        #             ),
-        #     ],
-        #     total=" ",
-        #     buttons=[
-        #         CardAction(
-        #             type=ActionTypes.open_url,
-        #             title="More Information",
-        #             value="https://www.worldometers.info/coronavirus/",
-        #         )
-        #     ],
-        # ))],
-        #     )
-        global_card= CardFactory.thumbnail_card(ThumbnailCard(
-            title="Global",
-            text="""Total cases:\t{}\r\nBeing infected:\t{}\r\nDeaths:\t{}\r\nRecovered:\t{}\r\n""".format(str(data['global']['cases']),str(data['global']['being_infected']),str(data['global']['deaths']),str(data['global']['recovered'])),
-            images=[
-                CardImage(
-                    url="https://inkedin.com/wp-content/uploads/2020/03/earth-icon.png"
-                )
-            ],
-            buttons=[
-                CardAction(
-                    type=ActionTypes.open_url,
-                    title="More information",
-                    value="https://www.worldometers.info/coronavirus/",
-                )
-            ],
-        ))
-        vietnam_card= CardFactory.thumbnail_card(ThumbnailCard(
-            title="Viet Nam",
-            text="""Total cases:\t{}\r\nBeing infected:\t{}\r\nDeaths:\t{}\r\nRecovered: \t{}\r\n""".format(str(data['vietnam']['cases']),str(data['vietnam']['being_infected']),str(data['vietnam']['deaths']),str(data['vietnam']['recovered'])),
-            images=[
-                CardImage(
-                    url="https://cdn2.iconfinder.com/data/icons/world-flag-2/30/21-512.png"
-                )
-            ],
-            buttons=[
-                CardAction(
-                    type=ActionTypes.open_url,
-                    title="More information",
-                    value="https://corona.kompa.ai/",
-                )
-            ],
-        ))
-        reply = MessageFactory.list([])
-        reply.text="My pleasure. Here some information: "
-        reply.attachment_layout = 'carousel'
-        reply.attachments.append(global_card)
-        reply.attachments.append(vietnam_card)
+        self._add_conversation_reference(turn_context.activity)
+        reply=generate_reply('reply')
         await turn_context.send_activity(reply)
 
-    def _create_adaptive_card_attachment(self) -> Attachment:
+    async def on_conversation_update_activity(self, turn_context: TurnContext):
+        self._add_conversation_reference(turn_context.activity)
+        return await super().on_conversation_update_activity(turn_context)
+
+    def _add_conversation_reference(self, activity: Activity):
         """
-        Load a random adaptive card attachment from file.
+        This populates the shared Dictionary that holds conversation references. In this sample,
+        this dictionary is used to send a message to members when /api/notify is hit.
+        :param activity:
         :return:
         """
-        random_card_index = random.randint(0, len(CARDS) - 1)
-        card_path = os.path.join(os.getcwd(), CARDS[random_card_index])
-        with open(card_path, "rb") as in_file:
-            card_data = json.load(in_file)
-
-        return CardFactory.adaptive_card(card_data)
+        conversation_reference = TurnContext.get_conversation_reference(activity)
+        self.conversation_references[
+            conversation_reference.user.id
+        ] = conversation_reference
 
 class MessageFactory:
     """
