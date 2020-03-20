@@ -53,14 +53,11 @@ import requests
 #     return {'global':global_statistic,'vietnam':vietnam_statistic}
 
 def get_api():
-    CHROMEDRIVER_PATH = '/app/.chromedriver/bin/chromedriver'
-    GOOGLE_CHROME_BIN =' /app/.apt/usr/bin/google-chrome'
-    chrome_options = webdriver.ChromeOptions()
-    chrome_options.binary_location =GOOGLE_CHROME_BIN #os.environ.get("GOOGLE_CHROME_BIN")
-    chrome_options.add_argument("--headless")
-    chrome_options.add_argument("--disable-dev-shm-usage")
-    chrome_options.add_argument("--no-sandbox")
-    driver = webdriver.Chrome(executable_path=CHROMEDRIVER_PATH, chrome_options=chrome_options)
+    from selenium.webdriver.chrome.options import Options as ChromeOptions
+    chrome_bin = os.environ.get('GOOGLE_CHROME_SHIM', None)
+    opts = ChromeOptions()
+    opts.binary_location = chrome_bin
+    driver= webdriver.Chrome(executable_path="chromedriver", chrome_options=opts)
     # driver = webdriver.Chrome(executable_path="C:\chromedriver.exe")
     url = "http://ncov.moh.gov.vn"
     driver.get(url)
