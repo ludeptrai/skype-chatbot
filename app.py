@@ -22,8 +22,6 @@ from bots.adaptive_cards_bot import generate_reply
 from config import DefaultConfig
 
 import time
-from timeloop import Timeloop
-from datetime import timedelta
 
 CONFIG = DefaultConfig()
 
@@ -103,7 +101,7 @@ async def _send_proactive_message():
     for conversation_reference in CONVERSATION_REFERENCES.values():
         return await ADAPTER.continue_conversation(
             conversation_reference,
-            lambda turn_context: turn_context.send_activity(generate_reply('report')[0]),
+            lambda turn_context: turn_context.send_activity(generate_reply('report')),
             APP_ID,
         )
 
