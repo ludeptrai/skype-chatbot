@@ -101,7 +101,7 @@ async def _send_proactive_message():
     for conversation_reference in CONVERSATION_REFERENCES.values():
         return await ADAPTER.continue_conversation(
             conversation_reference,
-            lambda turn_context: turn_context.send_activity(generate_reply('report')),
+            lambda turn_context: turn_context.send_activity(generate_reply('report')[0]),
             APP_ID,
         )
 

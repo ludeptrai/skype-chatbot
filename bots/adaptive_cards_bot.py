@@ -118,7 +118,7 @@ def generate_reply(response_type):
     reply.attachment_layout = 'carousel'
     reply.attachments.append(global_card)
     reply.attachments.append(vietnam_card)
-    return reply
+    return (reply,data['newest'])
 
 class AdaptiveCardsBot(ActivityHandler):
     """
@@ -148,7 +148,8 @@ class AdaptiveCardsBot(ActivityHandler):
         self._add_conversation_reference(turn_context.activity)
         reply=generate_reply('reply')
         await turn_context.send_activity('My pleasure. Here some information: ')
-        await turn_context.send_activity(reply)
+        await turn_context.send_activity(reply[0])
+        await turn_context.send_activity(reply[1])
 
     async def on_conversation_update_activity(self, turn_context: TurnContext):
         self._add_conversation_reference(turn_context.activity)
