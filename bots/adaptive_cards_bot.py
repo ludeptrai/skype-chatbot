@@ -126,6 +126,7 @@ class AdaptiveCardsBot(ActivityHandler):
         self._add_conversation_reference(turn_context.activity)
         reply=generate_reply('reply')
         await turn_context.send_activity(reply)
+        await turn_context.send_activity(reply)
 
     async def on_conversation_update_activity(self, turn_context: TurnContext):
         self._add_conversation_reference(turn_context.activity)
