@@ -53,7 +53,6 @@ import requests
 #     return {'global':global_statistic,'vietnam':vietnam_statistic}
 
 def get_api():
-<<<<<<< HEAD
     GOOGLE_CHROME_PATH = '/app/.apt/usr/bin/google_chrome'
     CHROMEDRIVER_PATH = '/app/.chromedriver/bin/chromedriver'
     chrome_options = webdriver.ChromeOptions()
@@ -62,9 +61,6 @@ def get_api():
     chrome_options.binary_location = GOOGLE_CHROME_PATH
     driver = webdriver.Chrome(execution_path=CHROMEDRIVER_PATH, chrome_options=chrome_options)
     # driver = webdriver.Chrome(executable_path="C:\chromedriver.exe")
-=======
-    driver = webdriver.Chrome(executable_path="C:\chromedriver.exe")
->>>>>>> 6f5e35c7926cb37d3b73c852a660e3c6d43314a5
     url = "http://ncov.moh.gov.vn"
     driver.get(url)
     driver.implicitly_wait(3)
