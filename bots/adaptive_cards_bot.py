@@ -41,16 +41,38 @@ def attachment_activity(
         message.speak = speak
     return message
 import requests
+# def get_api():
+#     API_ENDPOINT_all = "https://corona.lmao.ninja/all"
+#     API_ENDPOINT_country = 'https://corona.lmao.ninja/countries'
+#     # sending post request and saving response as response object 
+#     global_statistic = requests.get(url = API_ENDPOINT_all).json()
+#     global_statistic['being_infected']=global_statistic['cases']-global_statistic['deaths']-global_statistic['recovered']
+#     vietnam_statistic = [a for a in requests.get(url = API_ENDPOINT_country).json() if a['country']=='Vietnam'][0]
+#     vietnam_statistic={key:vietnam_statistic[key] for key in ['cases','deaths','recovered']}
+#     vietnam_statistic['being_infected']=vietnam_statistic['cases']-vietnam_statistic['deaths']-vietnam_statistic['recovered']
+#     return {'global':global_statistic,'vietnam':vietnam_statistic}
+
 def get_api():
-    API_ENDPOINT_all = "https://corona.lmao.ninja/all"
-    API_ENDPOINT_country = 'https://corona.lmao.ninja/countries'
-    # sending post request and saving response as response object 
-    global_statistic = requests.get(url = API_ENDPOINT_all).json()
-    global_statistic['being_infected']=global_statistic['cases']-global_statistic['deaths']-global_statistic['recovered']
-    vietnam_statistic = [a for a in requests.get(url = API_ENDPOINT_country).json() if a['country']=='Vietnam'][0]
-    vietnam_statistic={key:vietnam_statistic[key] for key in ['cases','deaths','recovered']}
-    vietnam_statistic['being_infected']=vietnam_statistic['cases']-vietnam_statistic['deaths']-vietnam_statistic['recovered']
-    return {'global':global_statistic,'vietnam':vietnam_statistic}
+    driver = webdriver.Chrome(executable_path="/app/.chromedriver/bin/chromedriver")
+    url = "http://ncov.moh.gov.vn"
+    driver.get(url)
+    driver.implicitly_wait(3)
+    vietnam={}
+    vietnam['cases']=int(driver.find_element_by_id('VN-01').text.replace('.',''))
+    vietnam['deaths']=int(driver.find_element_by_id('VN-02').text.replace('.',''))
+    vietnam['recovered']=int(driver.find_element_by_id('VN-04').text.replace('.',''))
+    vietnam['infected']=vietnam['cases']-vietnam['deaths']-vietnam['recovered']
+
+    global_={}
+    global_['cases']=int(driver.find_element_by_id('QT-01').text.replace('.',''))
+    global_['deaths']=int(driver.find_element_by_id('QT-02').text.replace('.',''))
+    global_['recovered']=int(driver.find_element_by_id('QT-04').text.replace('.',''))
+    global_['infected']=global_['cases']-global_['deaths']-global_['recovered']
+
+    newest=driver.find_element_by_xpath("//*[@id=\"yui_patched_v3_11_0_1_1582618410030_3628\"]/div[2]/div/p["+str(vietnam['cases']-30)+"]/strong/span[3]").text
+    newest="Bệnh nhân "+str(vietnam['cases'])+newest
+    driver.close()
+    return {'global':global_,'vietnam':vietnam,'newest':newest}
 
 def generate_reply(response_type):
     if response_type=='reply':
@@ -61,7 +83,7 @@ def generate_reply(response_type):
     data=get_api()
     global_card= CardFactory.thumbnail_card(ThumbnailCard(
         title="Global",
-        text="""Total cases:\t{}\r\nBeing infected:\t{}\r\nDeaths:\t{}\r\nRecovered:\t{}\r\n""".format(str(data['global']['cases']),str(data['global']['being_infected']),str(data['global']['deaths']),str(data['global']['recovered'])),
+        text="""Total cases:\t{}\r\nBeing infected:\t{}\r\nDeaths:\t{}\r\nRecovered:\t{}\r\n""".format(str(data['global']['cases']),str(data['global']['infected']),str(data['global']['deaths']),str(data['global']['recovered'])),
         images=[
             CardImage(
                 url="https://inkedin.com/wp-content/uploads/2020/03/earth-icon.png"
@@ -77,7 +99,7 @@ def generate_reply(response_type):
     ))
     vietnam_card= CardFactory.thumbnail_card(ThumbnailCard(
         title="Viet Nam",
-        text="""Total cases:\t{}\r\nBeing infected:\t{}\r\nDeaths:\t{}\r\nRecovered: \t{}\r\n""".format(str(data['vietnam']['cases']),str(data['vietnam']['being_infected']),str(data['vietnam']['deaths']),str(data['vietnam']['recovered'])),
+        text="""Total cases:\t{}\r\nBeing infected:\t{}\r\nDeaths:\t{}\r\nRecovered: \t{}\r\n""".format(str(data['vietnam']['cases']),str(data['vietnam']['infected']),str(data['vietnam']['deaths']),str(data['vietnam']['recovered'])),
         images=[
             CardImage(
                 url="https://cdn2.iconfinder.com/data/icons/world-flag-2/30/21-512.png"
@@ -125,7 +147,7 @@ class AdaptiveCardsBot(ActivityHandler):
     async def on_message_activity(self, turn_context: TurnContext):
         self._add_conversation_reference(turn_context.activity)
         reply=generate_reply('reply')
-        await turn_context.send_activity(reply)
+        await turn_context.send_activity('My pleasure. Here some information: ')
         await turn_context.send_activity(reply)
 
     async def on_conversation_update_activity(self, turn_context: TurnContext):
