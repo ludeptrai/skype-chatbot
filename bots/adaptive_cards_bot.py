@@ -111,8 +111,8 @@ def generate_reply():
     ))
     news_list = requests.get('https://s1.tuoitre.vn/Handlers/Menu.ashx?c=getdata')
     hot=news_list.json()['Data']['3'][0][0]
-    hot=requests.get('https://tuoitre.vn/'+hot['Url'])
-    soup = BeautifulSoup(hot.text, "html.parser")
+    req=requests.get('https://tuoitre.vn/'+hot['Url'])
+    soup = BeautifulSoup(req.text, "html.parser")
     content=soup.find('h2',class_='sapo').text[6:]
     news= CardFactory.thumbnail_card(ThumbnailCard(
         title=hot['Title'],
