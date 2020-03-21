@@ -57,7 +57,7 @@ def get_api():
     driver = webdriver.Chrome(executable_path="/app/.chromedriver/bin/chromedriver")
     url = "http://ncov.moh.gov.vn"
     driver.get(url)
-    driver.implicitly_wait(4)
+    driver.implicitly_wait(3)
     vietnam={}
     vietnam['cases']=int(driver.find_element_by_id('VN-01').text.replace('.',''))
     vietnam['deaths']=int(driver.find_element_by_id('VN-02').text.replace('.',''))
@@ -69,12 +69,11 @@ def get_api():
     global_['deaths']=int(driver.find_element_by_id('QT-02').text.replace('.',''))
     global_['recovered']=int(driver.find_element_by_id('QT-04').text.replace('.',''))
     global_['infected']=global_['cases']-global_['deaths']-global_['recovered']
-    patients=driver.find_element_by_xpath("//*[@id=\"yui_patched_v3_11_0_1_1582618410030_3628\"]/div[2]/div").text.split('\n')
-    patients.reverse()
-    for patient in patients:
-        if len(patient)>5:
-            newest=patient[6:]
-            break
+    newest=driver.find_element_by_xpath("//*[@id=\"yui_patched_v3_11_0_1_1582618410030_3628\"]/div[2]/div").text.split('\n')[0][7:]
+    # for patient in patients:
+    #     if len(patient)>5:
+    #         newest=patient[6:]
+    #         break
     newest="For your infomation: Bệnh nhân "+str(vietnam['cases'])+' là '+newest
     driver.close()
     return {'global':global_,'vietnam':vietnam,'newest':newest}
@@ -98,7 +97,7 @@ def generate_reply():
     #     ],
     # ))
     vietnam_card= CardFactory.thumbnail_card(ThumbnailCard(
-        title="Viet Nam",
+        title="Việt Nam",
         text="""Total cases:\t{}\r\nBeing infected:\t{}\r\nDeaths:\t{}\r\nRecovered: \t{}\r\n""".format(str(data['vietnam']['cases']),str(data['vietnam']['infected']),str(data['vietnam']['deaths']),str(data['vietnam']['recovered'])),
         images=[
             CardImage(
@@ -167,7 +166,7 @@ class AdaptiveCardsBot(ActivityHandler):
     async def on_message_activity(self, turn_context: TurnContext):
         self._add_conversation_reference(turn_context.activity)
         reply=generate_reply()
-        await turn_context.send_activity('My pleasure. Here some information: ')
+        await turn_context.send_activity('Thông tin mới nhất nà:')
         await turn_context.send_activity(reply[0])
         await turn_context.send_activity(reply[1])
 
