@@ -71,7 +71,7 @@ def get_api():
     global_['infected']=global_['cases']-global_['deaths']-global_['recovered']
 
     newest=driver.find_element_by_xpath("//*[@id=\"yui_patched_v3_11_0_1_1582618410030_3628\"]/div[2]/div").text.split('\n')[-1][6:]
-    newest="Bệnh nhân "+str(vietnam['cases'])+newest
+    newest="For your infomation: Bệnh nhân "+str(vietnam['cases'])+' là '+newest
     driver.close()
     return {'global':global_,'vietnam':vietnam,'newest':newest}
 
