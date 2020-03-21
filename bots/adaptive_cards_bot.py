@@ -82,18 +82,18 @@ def generate_reply(response_type):
 
     data=get_api()
     global_card= CardFactory.thumbnail_card(ThumbnailCard(
-        title="Global",
-        text="""Total cases:\t{}\r\nBeing infected:\t{}\r\nDeaths:\t{}\r\nRecovered:\t{}\r\n""".format(str(data['global']['cases']),str(data['global']['infected']),str(data['global']['deaths']),str(data['global']['recovered'])),
+        title="Cộng đồng chung tay chống COVID-19",
+        #text="""Total cases:\t{}\r\nBeing infected:\t{}\r\nDeaths:\t{}\r\nRecovered:\t{}\r\n""".format(str(data['global']['cases']),str(data['global']['infected']),str(data['global']['deaths']),str(data['global']['recovered'])),
         images=[
             CardImage(
-                url="https://inkedin.com/wp-content/uploads/2020/03/earth-icon.png"
+                url="https://cdn.tuoitre.vn/zoom/188_117/2020/3/21/chot-phong-dich-ngoai-1584751358708692384877-crop-15847516489591463323519.jpg"
             )
         ],
         buttons=[
             CardAction(
                 type=ActionTypes.open_url,
-                title="More information",
-                value="https://www.worldometers.info/coronavirus/",
+                title="Đọc thêm",
+                value="https://tuoitre.vn/cong-dong-chung-tay-chong-covid-19-20200321074705891.htm",
             )
         ],
     ))
