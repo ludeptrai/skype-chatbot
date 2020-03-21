@@ -69,8 +69,12 @@ def get_api():
     global_['deaths']=int(driver.find_element_by_id('QT-02').text.replace('.',''))
     global_['recovered']=int(driver.find_element_by_id('QT-04').text.replace('.',''))
     global_['infected']=global_['cases']-global_['deaths']-global_['recovered']
-
-    newest=driver.find_element_by_xpath("//*[@id=\"yui_patched_v3_11_0_1_1582618410030_3628\"]/div[2]/div").text.split('\n')[-1][6:]
+    patients=driver.find_element_by_xpath("//*[@id=\"yui_patched_v3_11_0_1_1582618410030_3628\"]/div[2]/div").text.split('\n')
+    patients.reverse()
+    for patient in patients:
+        if len(patient)>5:
+            newest=patient[6:]
+            break
     newest="For your infomation: Bệnh nhân "+str(vietnam['cases'])+' là '+newest
     driver.close()
     return {'global':global_,'vietnam':vietnam,'newest':newest}
