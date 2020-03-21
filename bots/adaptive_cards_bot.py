@@ -126,7 +126,7 @@ def generate_reply():
             CardAction(
                 type=ActionTypes.open_url,
                 title="Đọc thêm",
-                value=hot['Url'],
+                value='https://tuoitre.vn/'+hot['Url'],
             )
         ],
     ))
