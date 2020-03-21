@@ -116,7 +116,7 @@ def generate_reply():
     content=soup.find('h2',class_='sapo').text[6:]
     news= CardFactory.thumbnail_card(ThumbnailCard(
         title=hot['Title'],
-        text=content,
+        text=content[:100]+'...',
         images=[
             CardImage(
                 url=hot['ThumbImage']
