@@ -56,7 +56,7 @@ def get_api():
     driver = webdriver.Chrome(executable_path="/app/.chromedriver/bin/chromedriver")
     url = "http://ncov.moh.gov.vn"
     driver.get(url)
-    driver.implicitly_wait(5)
+    driver.implicitly_wait(4)
     vietnam={}
     vietnam['cases']=int(driver.find_element_by_id('VN-01').text.replace('.',''))
     vietnam['deaths']=int(driver.find_element_by_id('VN-02').text.replace('.',''))
@@ -161,7 +161,7 @@ class AdaptiveCardsBot(ActivityHandler):
 
     async def on_message_activity(self, turn_context: TurnContext):
         self._add_conversation_reference(turn_context.activity)
-        reply=generate_reply('reply')
+        reply=generate_reply()
         await turn_context.send_activity('My pleasure. Here some information: ')
         await turn_context.send_activity(reply[0])
         await turn_context.send_activity(reply[1])

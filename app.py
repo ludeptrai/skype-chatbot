@@ -101,22 +101,23 @@ async def _send_proactive_message():
     for conversation_reference in CONVERSATION_REFERENCES.values():
         return await ADAPTER.continue_conversation(
             conversation_reference,
-            lambda turn_context: turn_context.send_activity(generate_reply('report')[0]),
+            lambda turn_context: turn_context.send_activity(generate_reply()[0]),
             APP_ID,
         )
 
 async def notify(req: Request) -> Response:  # pylint: disable=unused-argument
+    await turn_context.send_activity('For you information: ')
     await _send_proactive_message()
     return Response(status=201, text="Proactive messages have been sent")
 
 async def listen_to_redis(app):
     while True:
         clock=datetime.now()
-        if (clock.hour==8 and clock.minute==30 and clock.second<6) or (clock.hour==17 and clock.minute==30 and clock.second<6):
+        if (clock.hour==8 and clock.minute==30) or (clock.hour==15 and clock.minute==30):
             print("Daily report!")
             await _send_proactive_message()
-            await asyncio.sleep(5)
-        await asyncio.sleep(1)
+            await asyncio.sleep(18000)
+        await asyncio.sleep(10)
 
 async def start_background_tasks(app):
     app['redis_listener'] = asyncio.create_task(listen_to_redis(app))
