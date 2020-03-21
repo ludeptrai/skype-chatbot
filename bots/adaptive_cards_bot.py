@@ -74,29 +74,24 @@ def get_api():
     driver.close()
     return {'global':global_,'vietnam':vietnam,'newest':newest}
 
-def generate_reply(response_type):
-    if response_type=='reply':
-        text='My pleasure. Here some information: '
-    elif response_type=='report':
-        text='For your information: '
-
+def generate_reply():
     data=get_api()
-    global_card= CardFactory.thumbnail_card(ThumbnailCard(
-        title="Cộng đồng chung tay chống COVID-19",
-        #text="""Total cases:\t{}\r\nBeing infected:\t{}\r\nDeaths:\t{}\r\nRecovered:\t{}\r\n""".format(str(data['global']['cases']),str(data['global']['infected']),str(data['global']['deaths']),str(data['global']['recovered'])),
-        images=[
-            CardImage(
-                url="https://cdn.tuoitre.vn/zoom/188_117/2020/3/21/chot-phong-dich-ngoai-1584751358708692384877-crop-15847516489591463323519.jpg"
-            )
-        ],
-        buttons=[
-            CardAction(
-                type=ActionTypes.open_url,
-                title="Đọc thêm",
-                value="https://tuoitre.vn/cong-dong-chung-tay-chong-covid-19-20200321074705891.htm",
-            )
-        ],
-    ))
+    # global_card= CardFactory.thumbnail_card(ThumbnailCard(
+    #     title="Cộng đồng chung tay chống COVID-19",
+    #     #text="""Total cases:\t{}\r\nBeing infected:\t{}\r\nDeaths:\t{}\r\nRecovered:\t{}\r\n""".format(str(data['global']['cases']),str(data['global']['infected']),str(data['global']['deaths']),str(data['global']['recovered'])),
+    #     images=[
+    #         CardImage(
+    #             url="https://cdn.tuoitre.vn/zoom/188_117/2020/3/21/chot-phong-dich-ngoai-1584751358708692384877-crop-15847516489591463323519.jpg"
+    #         )
+    #     ],
+    #     buttons=[
+    #         CardAction(
+    #             type=ActionTypes.open_url,
+    #             title="Đọc thêm",
+    #             value="https://tuoitre.vn/cong-dong-chung-tay-chong-covid-19-20200321074705891.htm",
+    #         )
+    #     ],
+    # ))
     vietnam_card= CardFactory.thumbnail_card(ThumbnailCard(
         title="Viet Nam",
         text="""Total cases:\t{}\r\nBeing infected:\t{}\r\nDeaths:\t{}\r\nRecovered: \t{}\r\n""".format(str(data['vietnam']['cases']),str(data['vietnam']['infected']),str(data['vietnam']['deaths']),str(data['vietnam']['recovered'])),
@@ -113,11 +108,31 @@ def generate_reply(response_type):
             )
         ],
     ))
-    anh=MessageFactory()
-    reply = anh.list([],text=text)
+    news_list = requests.get('https://s1.tuoitre.vn/Handlers/Menu.ashx?c=getdata')
+    hot=news_list.json()['Data']['3'][0][0]
+    hot=requests.get('https://tuoitre.vn/'+hot['Url'])
+    soup = BeautifulSoup(hot.text, "lxml")
+    content=soup.find('h2',class_='sapo').text[6:]
+    news= CardFactory.thumbnail_card(ThumbnailCard(
+        title=hot['Title'],
+        text=content,
+        images=[
+            CardImage(
+                url=hot['ThumbImage']
+            )
+        ],
+        buttons=[
+            CardAction(
+                type=ActionTypes.open_url,
+                title="Đọc thêm",
+                value=hot['Url'],
+            )
+        ],
+    ))
+    reply=MessageFactory().list([])
     reply.attachment_layout = 'carousel'
-    reply.attachments.append(global_card)
     reply.attachments.append(vietnam_card)
+    reply.attachments.append(news)
     return (reply,data['newest'])
 
 class AdaptiveCardsBot(ActivityHandler):
