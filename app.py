@@ -99,7 +99,7 @@ async def messages(req: Request) -> Response:
 # This uses the shared Dictionary that the Bot adds conversation references to.
 async def _send_proactive_message():
     for conversation_reference in CONVERSATION_REFERENCES.values():
-        print(conversation_reference,APP_ID)
+        # print(conversation_reference,APP_ID)
         return await ADAPTER.continue_conversation(
             conversation_reference,
             lambda turn_context: turn_context.send_activity(generate_reply()[0]),
@@ -107,7 +107,7 @@ async def _send_proactive_message():
         )
 
 async def notify(req: Request) -> Response:  # pylint: disable=unused-argument
-    await turn_context.send_activity('For your information: ')
+    # await turn_context.send_activity('For your information: ')
     await _send_proactive_message()
     return Response(status=201, text="Proactive messages have been sent")
 
