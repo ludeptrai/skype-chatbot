@@ -27,8 +27,8 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 chrome_options = Options()
 chrome_options.add_argument("--headless")
-driver.set_page_load_timeout(2)
 driver = webdriver.Chrome(executable_path="/app/.chromedriver/bin/chromedriver",options=chrome_options)
+driver.set_page_load_timeout(2)
 
 
 def attachment_activity(
