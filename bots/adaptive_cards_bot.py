@@ -1,6 +1,5 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
-from selenium import webdriver
 from bs4 import BeautifulSoup
 import json
 import os
@@ -23,6 +22,14 @@ from botbuilder.schema import (
     AttachmentLayoutTypes,
     InputHints
 )
+
+from selenium import webdriver
+chrome_options = Options()
+chrome_options.add_argument("--headless")
+driver.set_page_load_timeout(2)
+driver = webdriver.Chrome(executable_path="/app/.chromedriver/bin/chromedriver",options=chrome_options)
+
+
 def attachment_activity(
     attachment_layout: AttachmentLayoutTypes,
     attachments: List[Attachment],
@@ -54,10 +61,11 @@ import requests
 #     return {'global':global_statistic,'vietnam':vietnam_statistic}
 
 def get_api():
-    driver = webdriver.Chrome(executable_path="/app/.chromedriver/bin/chromedriver")
     url = "http://ncov.moh.gov.vn"
-    driver.get(url)
-    driver.implicitly_wait(3)
+    try:
+        driver.get(url)
+    except:
+        True
     vietnam={}
     vietnam['cases']=int(driver.find_element_by_id('VN-01').text.replace('.',''))
     vietnam['deaths']=int(driver.find_element_by_id('VN-02').text.replace('.',''))
@@ -70,10 +78,6 @@ def get_api():
     global_['recovered']=int(driver.find_element_by_id('QT-04').text.replace('.',''))
     global_['infected']=global_['cases']-global_['deaths']-global_['recovered']
     newest=driver.find_element_by_xpath("//*[@id=\"yui_patched_v3_11_0_1_1582618410030_3628\"]/div[2]/div").text.split('\n')[0][7:]
-    # for patient in patients:
-    #     if len(patient)>5:
-    #         newest=patient[6:]
-    #         break
     newest="For your infomation: Bệnh nhân "+str(vietnam['cases'])+' là '+newest
     driver.close()
     return {'global':global_,'vietnam':vietnam,'newest':newest}
