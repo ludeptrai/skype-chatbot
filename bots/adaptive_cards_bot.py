@@ -28,7 +28,7 @@ from selenium.webdriver.chrome.options import Options
 chrome_options = Options()
 chrome_options.add_argument("--headless")
 driver = webdriver.Chrome(executable_path="/app/.chromedriver/bin/chromedriver",options=chrome_options)
-driver.set_page_load_timeout(15)
+driver.set_page_load_timeout(8)
 
 
 def attachment_activity(
@@ -117,24 +117,29 @@ def generate_reply():
             )
         ],
     ))
-    news_list = requests.get('https://s1.tuoitre.vn/Handlers/Menu.ashx?c=getdata')
-    hot=news_list.json()['Data']['3'][0][0]
-    req=requests.get('https://tuoitre.vn/'+hot['Url'])
-    soup = BeautifulSoup(req.text, "html.parser")
-    content=soup.find('h2',class_='sapo').text[6:]
+    # news_list = requests.get('https://s1.tuoitre.vn/Handlers/Menu.ashx?c=getdata')
+    # hot=news_list.json()['Data']['3'][0][0]
+    # req=requests.get('https://tuoitre.vn/'+hot['Url'])
+    # soup = BeautifulSoup(req.text, "html.parser")
+    # content=soup.find('h2',class_='sapo').text[6:]
+    url='https://tuoitre.vn/phong-chong-virus-corona-e583.htm'
+    req=requests.get(url)
+    soup=BeautifulSoup(req.text, "html.parser")
+    news=soup.find('div',class_='name-news')
+    content=news.find('p').text
     news= CardFactory.thumbnail_card(ThumbnailCard(
-        title=hot['Title'],
+        title=news.find('a').text,
         text=content[:100]+'...',
         images=[
             CardImage(
-                url=hot['ThumbImage']
+                url=soup.find('img',class_='img212x132').get('src')
             )
         ],
         buttons=[
             CardAction(
                 type=ActionTypes.open_url,
                 title="Đọc thêm",
-                value='https://tuoitre.vn/'+hot['Url'],
+                value='https://tuoitre.vn/'+news.find('a').get('href'),
             )
         ],
     ))
